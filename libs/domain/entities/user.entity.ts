@@ -4,5 +4,5 @@ export interface User {
     id: UUID;
     name: string;
     email: string;
-    phoneNumber: string;
+    phone: string;
 }
