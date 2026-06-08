@@ -1,0 +1,21 @@
+{
+  "name": "@job-hunter/db",
+  "version": "1.0.0",
+  "description": "Shared Prisma database client and schemas",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.10.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "prisma": "^5.10.2",
+    "typescript": "^5.3.3"
+  }
+}
