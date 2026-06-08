@@ -1,12 +1,18 @@
 import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
-import { CreateProfileUseCase, CreateProfileDto } from '../../../application/use-cases/create-profile.use-case';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CreateProfileUseCase } from '../../../application/use-cases/create-profile.use-case';
+import { CreateProfileHttpDto } from './dtos/create-profile.dto';
 
+@ApiTags('Profiles')
 @Controller('profiles')
 export class ProfileController {
   constructor(private readonly createProfileUseCase: CreateProfileUseCase) {}
 
   @Post()
-  async create(@Body() dto: CreateProfileDto) {
+  @ApiOperation({ summary: 'Create a job hunter profile' })
+  @ApiResponse({ status: 201, description: 'Profile created successfully.' })
+  @ApiResponse({ status: 400, description: 'Invalid input parameters.' })
+  async create(@Body() dto: CreateProfileHttpDto) {
     try {
       const profile = await this.createProfileUseCase.execute(dto);
       return {
