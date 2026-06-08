@@ -40,3 +40,6 @@ yarn-error.log*
 # Archivos del Sistema Operativo
 .DS_Store
 Thumbs.db
+
+# Carpetas del Agente
+.antigravity/
