@@ -17,6 +17,12 @@ export class CreateProfileUseCase {
   ) {}
 
   async execute(dto: CreateProfileDto): Promise<Profile> {
+    // Check if the user already has 3 profiles
+    const existingProfiles = await this.profileRepository.findByUserId(dto.userId);
+    if (existingProfiles.length >= 3) {
+      throw new Error('A user cannot have more than 3 profiles');
+    }
+
     const profile: Profile = {
       id: randomUUID(),
       userId: dto.userId,

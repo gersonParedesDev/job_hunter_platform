@@ -38,17 +38,15 @@ export class MongooseProfileRepository implements ProfileRepository {
     };
   }
 
-  async findByUserId(userId: UUID): Promise<Profile | null> {
-    const found = await ProfileModel.findOne({ userId });
-    if (!found) return null;
-
-    return {
-      id: found.id,
-      userId: found.userId,
-      profession: found.profession,
-      skills: found.skills,
-      createdAt: found.createdAt,
-    };
+  async findByUserId(userId: UUID): Promise<Profile[]> {
+    const found = await ProfileModel.find({ userId });
+    return found.map(doc => ({
+      id: doc.id,
+      userId: doc.userId,
+      profession: doc.profession,
+      skills: doc.skills,
+      createdAt: doc.createdAt,
+    }));
   }
 
   async delete(id: UUID): Promise<void> {
