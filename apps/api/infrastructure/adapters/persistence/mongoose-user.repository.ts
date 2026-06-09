@@ -1,37 +1,30 @@
 import { UserRepository } from '@job-hunter/domain/ports/user.repository.port';
 import { User, UUID } from '@job-hunter/domain/entities/user.entity';
-import { prisma } from '@job-hunter/db';
+import { UserModel } from '@job-hunter/db';
 
-export class PrismaUserRepository implements UserRepository {
+export class MongooseUserRepository implements UserRepository {
   async save(user: User): Promise<User> {
-    const upserted = await prisma.user.upsert({
-      where: { id: user.id },
-      update: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-      },
-      create: {
+    const updated = await UserModel.findOneAndUpdate(
+      { id: user.id },
+      {
         id: user.id,
         name: user.name,
         email: user.email,
         phone: user.phone,
       },
-    });
+      { upsert: true, new: true }
+    );
 
     return {
-      id: upserted.id,
-      name: upserted.name,
-      email: upserted.email,
-      phone: upserted.phone,
+      id: updated.id,
+      name: updated.name,
+      email: updated.email,
+      phone: updated.phone,
     };
   }
 
   async findById(id: UUID): Promise<User | null> {
-    const found = await prisma.user.findUnique({
-      where: { id },
-    });
-
+    const found = await UserModel.findOne({ id });
     if (!found) return null;
 
     return {
@@ -43,10 +36,7 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const found = await prisma.user.findUnique({
-      where: { email },
-    });
-
+    const found = await UserModel.findOne({ email });
     if (!found) return null;
 
     return {
@@ -58,8 +48,6 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async delete(id: UUID): Promise<void> {
-    await prisma.user.delete({
-      where: { id },
-    });
+    await UserModel.deleteOne({ id });
   }
 }

@@ -3,20 +3,20 @@ import { ProfileController } from '../adapters/http/profile.controller';
 import { UserController } from '../adapters/http/user.controller';
 import { CreateProfileUseCase } from '../../application/use-cases/create-profile.use-case';
 import { CreateUserUseCase } from '../../application/use-cases/create-user.use-case';
-import { PrismaProfileRepository } from '../adapters/persistence/prisma-profile.repository';
-import { PrismaUserRepository } from '../adapters/persistence/prisma-user.repository';
+import { MongooseProfileRepository } from '../adapters/persistence/mongoose-profile.repository';
+import { MongooseUserRepository } from '../adapters/persistence/mongoose-user.repository';
 import { ConsoleJobQueueAdapter } from '../adapters/queue/console-job-queue.adapter';
 
 @Module({
   controllers: [ProfileController, UserController],
   providers: [
     {
-      provide: PrismaProfileRepository,
-      useClass: PrismaProfileRepository,
+      provide: MongooseProfileRepository,
+      useClass: MongooseProfileRepository,
     },
     {
-      provide: PrismaUserRepository,
-      useClass: PrismaUserRepository,
+      provide: MongooseUserRepository,
+      useClass: MongooseUserRepository,
     },
     {
       provide: ConsoleJobQueueAdapter,
@@ -25,19 +25,19 @@ import { ConsoleJobQueueAdapter } from '../adapters/queue/console-job-queue.adap
     {
       provide: CreateProfileUseCase,
       useFactory: (
-        profileRepo: PrismaProfileRepository,
+        profileRepo: MongooseProfileRepository,
         jobQueue: ConsoleJobQueueAdapter
       ) => {
         return new CreateProfileUseCase(profileRepo, jobQueue);
       },
-      inject: [PrismaProfileRepository, ConsoleJobQueueAdapter],
+      inject: [MongooseProfileRepository, ConsoleJobQueueAdapter],
     },
     {
       provide: CreateUserUseCase,
-      useFactory: (userRepo: PrismaUserRepository) => {
+      useFactory: (userRepo: MongooseUserRepository) => {
         return new CreateUserUseCase(userRepo);
       },
-      inject: [PrismaUserRepository],
+      inject: [MongooseUserRepository],
     },
   ],
 })

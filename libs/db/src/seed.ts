@@ -1,19 +1,28 @@
-import { PrismaClient } from '@prisma/client';
+import { connectToDatabase, disconnectFromDatabase, UserModel } from './index';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-const prisma = new PrismaClient();
+// Load env variables from root
+dotenv.config({ path: path.join(__dirname, '../../../.env') });
+
+const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/job_hunter_db';
 
 async function main() {
-  const user = await prisma.user.upsert({
-    where: { id: 'user-uuid-123' },
-    update: {},
-    create: {
+  console.log(`Connecting to MongoDB at: ${mongoUri}`);
+  await connectToDatabase(mongoUri);
+
+  const user = await UserModel.findOneAndUpdate(
+    { id: 'user-uuid-123' },
+    {
       id: 'user-uuid-123',
       name: 'Gerson Architect',
       email: 'gerson.architect@example.com',
       phone: '+5491123456789',
     },
-  });
-  console.log(`✅ Test user successfully seeded:`, user);
+    { upsert: true, new: true }
+  );
+
+  console.log(`✅ Test user successfully seeded in MongoDB:`, user);
 }
 
 main()
@@ -22,5 +31,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await disconnectFromDatabase();
   });

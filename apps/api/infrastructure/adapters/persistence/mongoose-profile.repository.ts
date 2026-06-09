@@ -1,39 +1,32 @@
 import { ProfileRepository } from '@job-hunter/domain/ports/profile.repository.port';
 import { Profile, UUID } from '@job-hunter/domain/entities/profile.entity';
-import { prisma } from '@job-hunter/db';
+import { ProfileModel } from '@job-hunter/db';
 
-export class PrismaProfileRepository implements ProfileRepository {
+export class MongooseProfileRepository implements ProfileRepository {
   async save(profile: Profile): Promise<Profile> {
-    const upserted = await prisma.profile.upsert({
-      where: { id: profile.id },
-      update: {
-        userId: profile.userId,
-        profession: profile.profession,
-        skills: profile.skills,
-      },
-      create: {
+    const updated = await ProfileModel.findOneAndUpdate(
+      { id: profile.id },
+      {
         id: profile.id,
         userId: profile.userId,
         profession: profile.profession,
         skills: profile.skills,
         createdAt: profile.createdAt,
       },
-    });
+      { upsert: true, new: true }
+    );
 
     return {
-      id: upserted.id,
-      userId: upserted.userId,
-      profession: upserted.profession,
-      skills: upserted.skills,
-      createdAt: upserted.createdAt,
+      id: updated.id,
+      userId: updated.userId,
+      profession: updated.profession,
+      skills: updated.skills,
+      createdAt: updated.createdAt,
     };
   }
 
   async findById(id: UUID): Promise<Profile | null> {
-    const found = await prisma.profile.findUnique({
-      where: { id },
-    });
-
+    const found = await ProfileModel.findOne({ id });
     if (!found) return null;
 
     return {
@@ -46,10 +39,7 @@ export class PrismaProfileRepository implements ProfileRepository {
   }
 
   async findByUserId(userId: UUID): Promise<Profile | null> {
-    const found = await prisma.profile.findFirst({
-      where: { userId },
-    });
-
+    const found = await ProfileModel.findOne({ userId });
     if (!found) return null;
 
     return {
@@ -62,8 +52,6 @@ export class PrismaProfileRepository implements ProfileRepository {
   }
 
   async delete(id: UUID): Promise<void> {
-    await prisma.profile.delete({
-      where: { id },
-    });
+    await ProfileModel.deleteOne({ id });
   }
 }

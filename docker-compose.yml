@@ -1,18 +1,14 @@
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: job_hunter_postgres
+  mongodb:
+    image: mongo:6.0-jammy
+    container_name: job_hunter_mongodb
     restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_password}
-      POSTGRES_DB: ${DB_NAME:-job_hunter_db}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongodb_data:/data/db
 
   redis:
     image: redis:7-alpine
@@ -24,5 +20,5 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres_data:
+  mongodb_data:
   redis_data:

@@ -7,8 +7,15 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './infrastructure/config/app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { connectToDatabase } from '@job-hunter/db';
 
 async function bootstrap() {
+  // Connect to MongoDB
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/job_hunter_db';
+  console.log(`Connecting to MongoDB...`);
+  await connectToDatabase(mongoUri);
+  console.log(`Connected to MongoDB successfully!`);
+
   const app = await NestFactory.create(AppModule);
   
   // Enable CORS

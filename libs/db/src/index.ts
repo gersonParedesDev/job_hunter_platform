@@ -1,5 +1,18 @@
-import { PrismaClient } from '@prisma/client';
+import mongoose from 'mongoose';
 
-export const prisma = new PrismaClient();
+export async function connectToDatabase(uri: string): Promise<typeof mongoose> {
+  if (mongoose.connection.readyState >= 1) {
+    return mongoose;
+  }
+  return mongoose.connect(uri);
+}
 
-export * from '@prisma/client';
+export async function disconnectFromDatabase(): Promise<void> {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
+}
+
+export * from './schemas/user.schema';
+export * from './schemas/profile.schema';
+export { mongoose };
