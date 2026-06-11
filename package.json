@@ -1,0 +1,9 @@
+{
+  "name": "job-hunter-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "api": "yarn --cwd apps/api start:dev",
+    "web": "yarn --cwd apps/frontend start"
+  }
+}
