@@ -1,0 +1,276 @@
+<div class="wizard-container">
+  <div class="wizard-card">
+    <!-- Header -->
+    <div class="wizard-header">
+      <div class="wizard-logo">Job Hunter</div>
+      @if (step() === 1) {
+        <h2 class="wizard-title">Registrar Candidato</h2>
+        <p class="wizard-subtitle">Ingresa la información básica de contacto del candidato.</p>
+      } @else if (step() === 2) {
+        <h2 class="wizard-title">Configurar Perfiles</h2>
+        <p class="wizard-subtitle">Crea hasta 3 perfiles profesionales para buscar y emparejar ofertas de trabajo.</p>
+      } @else {
+        <h2 class="wizard-title">¡Registro Exitoso!</h2>
+        <p class="wizard-subtitle">El candidato y sus perfiles han sido guardados correctamente en MongoDB.</p>
+      }
+    </div>
+
+    <!-- Steps Indicator -->
+    @if (step() <= 2) {
+      <div class="steps-indicator">
+        <div class="step-item" [class.active]="step() === 1" [class.completed]="step() > 1">
+          <div class="step-node">1</div>
+          <div class="step-label">Datos Básicos</div>
+        </div>
+        <div class="step-item" [class.active]="step() === 2" [class.completed]="step() > 2">
+          <div class="step-node">2</div>
+          <div class="step-label">Perfiles de Búsqueda</div>
+        </div>
+      </div>
+    }
+
+    <!-- Global Error Display -->
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        <span>⚠️</span> {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Step 1: Candidate Register Form -->
+    @if (step() === 1) {
+      <form (ngSubmit)="handleCreateUser()" #userForm="ngForm">
+        <div class="form-group">
+          <label class="form-label" for="name">Nombre Completo</label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            class="form-control" 
+            placeholder="Ej. Juan Pérez" 
+            required 
+            minlength="3"
+            [(ngModel)]="userModel.name"
+            #nameInput="ngModel"
+          />
+          @if (nameInput.invalid && (nameInput.dirty || nameInput.touched)) {
+            <span class="form-error">El nombre es requerido (mínimo 3 caracteres).</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Correo Electrónico</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            class="form-control" 
+            placeholder="Ej. juan.perez@example.com" 
+            required 
+            email
+            [(ngModel)]="userModel.email"
+            #emailInput="ngModel"
+          />
+          @if (emailInput.invalid && (emailInput.dirty || emailInput.touched)) {
+            <span class="form-error">Por favor ingresa un correo electrónico válido.</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="phone">Teléfono de Contacto</label>
+          <input 
+            type="tel" 
+            id="phone" 
+            name="phone" 
+            class="form-control" 
+            placeholder="Ej. +5491122334455" 
+            required
+            [(ngModel)]="userModel.phone"
+            #phoneInput="ngModel"
+          />
+          @if (phoneInput.invalid && (phoneInput.dirty || phoneInput.touched)) {
+            <span class="form-error">El teléfono es requerido.</span>
+          }
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn btn-primary pull-right" 
+            [disabled]="userForm.invalid || isSubmitting()"
+          >
+            @if (isSubmitting()) { Guardando... } @else { Continuar ➜ }
+          </button>
+        </div>
+      </form>
+    }
+
+    <!-- Step 2: Profile Config Form -->
+    @if (step() === 2) {
+      <div class="alert alert-info">
+        <span>👤</span> Candidato: <strong>{{ registeredUser()?.name }}</strong> ({{ registeredUser()?.email }})
+      </div>
+
+      <!-- Add Profile Form -->
+      @if (profiles().length < 3) {
+        <div style="margin-bottom: 2rem;">
+          <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-primary);">Nuevo Perfil ({{ profiles().length }}/3)</h3>
+          
+          <form (ngSubmit)="handleCreateProfile()" #profileForm="ngForm">
+            <div class="form-group">
+              <label class="form-label" for="profession">Profesión / Cargo</label>
+              <select 
+                id="profession" 
+                name="profession" 
+                class="form-control" 
+                required
+                [(ngModel)]="profileModel.profession"
+              >
+                <option value="" disabled selected>Selecciona una profesión</option>
+                <option value="Software Engineer">Software Engineer</option>
+                <option value="React Developer">React Developer</option>
+                <option value="Angular Developer">Angular Developer</option>
+                <option value="Node.js Developer">Node.js Developer</option>
+                <option value="Python Developer">Python Developer</option>
+                <option value="Data Scientist">Data Scientist</option>
+                <option value="DevOps Engineer">DevOps Engineer</option>
+                <option value="Product Manager">Product Manager</option>
+                <option value="UI/UX Designer">UI/UX Designer</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="skillInput">Habilidades (Skills)</label>
+              <div class="skills-input-wrapper">
+                <input 
+                  type="text" 
+                  id="skillInput" 
+                  class="form-control" 
+                  placeholder="Ej. TypeScript (Presiona Enter o click en +)"
+                  [(ngModel)]="currentSkillInput"
+                  [ngModelOptions]="{standalone: true}"
+                  (keydown.enter)="$event.preventDefault(); addSkillTag()"
+                />
+                <button type="button" class="btn-add-tag" (click)="addSkillTag()">+</button>
+              </div>
+
+              <!-- Skill chips -->
+              <div class="chips-container">
+                @for (skill of profileModel.skills; track skill) {
+                  <span class="chip">
+                    {{ skill }}
+                    <button type="button" class="chip-remove" (click)="removeSkillTag(skill)">&times;</button>
+                  </span>
+                } @empty {
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">Sin habilidades agregadas aún.</span>
+                }
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              class="btn btn-secondary" 
+              style="width: 100%; margin-top: 1rem;"
+              [disabled]="profileForm.invalid || profileModel.skills.length === 0 || isSubmitting()"
+            >
+              @if (isSubmitting()) { Agregando... } @else { Agregar Perfil }
+            </button>
+          </form>
+        </div>
+      } @else {
+        <div class="alert alert-success">
+          <span>✓</span> Se ha alcanzado el límite máximo de 3 perfiles para este candidato.
+        </div>
+      }
+
+      <!-- List of Created Profiles -->
+      <div class="profiles-section">
+        <h4 class="section-title">
+          <span>Perfiles Registrados</span>
+          <span class="badge-count">{{ profiles().length }} / 3</span>
+        </h4>
+
+        <div class="profiles-list">
+          @for (p of profiles(); track p.id) {
+            <div class="profile-item">
+              <div class="profile-profession">{{ p.profession }}</div>
+              <div class="profile-skills">
+                @for (s of p.skills; track s) {
+                  <span class="skill-tag">{{ s }}</span>
+                }
+              </div>
+            </div>
+          } @empty {
+            <div style="text-align: center; padding: 2rem; border: 1px dashed var(--border-color); border-radius: 6px; color: var(--text-secondary);">
+              Aún no has registrado perfiles para este candidato.
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Footer Actions for Step 2 -->
+      <div class="form-actions" style="margin-top: 3rem;">
+        <button 
+          type="button" 
+          class="btn btn-primary pull-right"
+          (click)="finalizeRegistration()"
+          [disabled]="profiles().length === 0"
+        >
+          Finalizar Registro
+        </button>
+      </div>
+    }
+
+    <!-- Step 3: Success Screen -->
+    @if (step() === 3) {
+      <div class="success-screen">
+        <div class="success-icon">✓</div>
+        
+        <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">¡Candidato y Perfiles Guardados!</h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">
+          Los datos están listos. Se han encolado las tareas de scraping de ofertas de trabajo en la cola Redis/Console.
+        </p>
+
+        <div class="success-details">
+          <div class="detail-row">
+            <span class="detail-label">Nombre:</span>
+            <span class="detail-value">{{ registeredUser()?.name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">{{ registeredUser()?.email }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Teléfono:</span>
+            <span class="detail-value">{{ registeredUser()?.phone }}</span>
+          </div>
+        </div>
+
+        <div class="profiles-section" style="text-align: left;">
+          <h4 class="section-title">Perfiles Creados</h4>
+          <div class="profiles-list">
+            @for (p of profiles(); track p.id) {
+              <div class="profile-item">
+                <div class="profile-profession">{{ p.profession }}</div>
+                <div class="profile-skills">
+                  @for (s of p.skills; track s) {
+                    <span class="skill-tag">{{ s }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="form-actions" style="justify-content: center; margin-top: 3rem;">
+          <button 
+            type="button" 
+            class="btn btn-primary"
+            (click)="resetWizard()"
+          >
+            Registrar Nuevo Candidato
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

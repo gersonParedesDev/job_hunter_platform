@@ -1,0 +1,51 @@
+:root {
+  --bg-main: #09090b;       /* Zinc 950 */
+  --bg-card: #18181b;       /* Zinc 900 */
+  --bg-input: #09090b;      /* Zinc 950 */
+  --border-color: #27272a;  /* Zinc 800 */
+  --text-primary: #f4f4f5;  /* Zinc 100 */
+  --text-secondary: #a1a1aa;/* Zinc 400 */
+  --text-muted: #52525b;    /* Zinc 600 */
+  --accent-color: #3f3f46;  /* Zinc 700 - Modern Sober Gray */
+  --accent-hover: #52525b;  /* Zinc 600 */
+  --accent-glow: rgba(255, 255, 255, 0.05);
+  --success-color: #10b981; /* Emerald 500 */
+  --error-color: #f43f5e;   /* Rose 500 */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --transition-speed: 0.2s;
+  --border-radius: 8px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
